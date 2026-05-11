@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { join } from 'path';
 import { Player } from './entities/player.entity';
 import { Article } from './entities/article.entity';
 import { Match } from './entities/match.entity';
@@ -14,7 +15,10 @@ import { CreateAllTables1715000000001 } from './database/migrations/171500000000
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: [join(process.cwd(), '.env.local'), join(process.cwd(), '.env')],
+    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
