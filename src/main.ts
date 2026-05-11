@@ -11,10 +11,18 @@ async function bootstrap() {
     'http://localhost:3000',
     'http://localhost:3001',
     'https://football.trandinhnamz.xyz',
+    'https://api.football.trandinhnamz.xyz',
+    'https://football.api.trandinhnamz.xyz',
   ];
 
   app.enableCors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(null, true); // Allow all for now, can be restricted later
+      }
+    },
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'x-admin-password'],
     credentials: true,
