@@ -6,12 +6,15 @@ import { Player } from './entities/player.entity';
 import { Article } from './entities/article.entity';
 import { Match } from './entities/match.entity';
 import { SyncCache } from './entities/sync-cache.entity';
+import { DriveLink } from './entities/drive-link.entity';
 import { PlayersModule } from './modules/players/players.module';
 import { ArticlesModule } from './modules/articles/articles.module';
 import { MatchesModule } from './modules/matches/matches.module';
 import { SyncModule } from './modules/sync/sync.module';
+import { DriveLinksModule } from './modules/drive-links/drive-links.module';
 import { CreateFootballSchema1715000000000 } from './database/migrations/1715000000000-CreateFootballSchema';
 import { CreateAllTables1715000000001 } from './database/migrations/1715000000001-CreateAllTables';
+import { CreateDriveLinksTable1715000000002 } from './database/migrations/1715000000002-CreateDriveLinksTable';
 
 @Module({
   imports: [
@@ -28,11 +31,11 @@ import { CreateAllTables1715000000001 } from './database/migrations/171500000000
         username: config.get('DB_USERNAME'),
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_NAME'),
-        entities: [Player, Article, Match, SyncCache],
+        entities: [Player, Article, Match, SyncCache, DriveLink],
         synchronize: false,
         migrationsRun: true,
         migrationsTableName: 'migrations',
-        migrations: [CreateFootballSchema1715000000000, CreateAllTables1715000000001],
+        migrations: [CreateFootballSchema1715000000000, CreateAllTables1715000000001, CreateDriveLinksTable1715000000002],
         ssl: { rejectUnauthorized: false },
         extra: { connectionTimeoutMillis: 10000 },
       }),
@@ -42,6 +45,7 @@ import { CreateAllTables1715000000001 } from './database/migrations/171500000000
     ArticlesModule,
     MatchesModule,
     SyncModule,
+    DriveLinksModule,
   ],
 })
 export class AppModule {}
