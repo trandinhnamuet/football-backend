@@ -7,10 +7,17 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'https://football.trandinhnamz.xyz',
+  ];
+
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://localhost:3001'],
+    origin: allowedOrigins,
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'x-admin-password'],
+    credentials: true,
   });
 
   app.useStaticAssets(join(process.cwd(), 'uploads'), {
