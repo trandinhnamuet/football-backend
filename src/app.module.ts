@@ -1,0 +1,43 @@
+import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Player } from './entities/player.entity';
+import { Article } from './entities/article.entity';
+import { Match } from './entities/match.entity';
+import { SyncCache } from './entities/sync-cache.entity';
+import { PlayersModule } from './modules/players/players.module';
+import { ArticlesModule } from './modules/articles/articles.module';
+import { MatchesModule } from './modules/matches/matches.module';
+import { SyncModule } from './modules/sync/sync.module';
+import { CreateFootballSchema1715000000000 } from './database/migrations/1715000000000-CreateFootballSchema';
+import { CreateAllTables1715000000001 } from './database/migrations/1715000000001-CreateAllTables';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) => ({
+        type: 'postgres',
+        host: config.get('DB_HOST'),
+        port: +(config.get<string>('DB_PORT') || '5432'),
+        username: config.get('DB_USERNAME'),
+        password: config.get('DB_PASSWORD'),
+        database: config.get('DB_NAME'),
+        entities: [Player, Article, Match, SyncCache],
+        synchronize: false,
+        migrationsRun: true,
+        migrationsTableName: 'migrations',
+        migrations: [CreateFootballSchema1715000000000, CreateAllTables1715000000001],
+        ssl: { rejectUnauthorized: false },
+        extra: { connectionTimeoutMillis: 10000 },
+      }),
+      inject: [ConfigService],
+    }),
+    PlayersModule,
+    ArticlesModule,
+    MatchesModule,
+    SyncModule,
+  ],
+})
+export class AppModule {}
