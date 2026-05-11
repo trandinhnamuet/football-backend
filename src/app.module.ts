@@ -17,6 +17,7 @@ import { CreateAllTables1715000000001 } from './database/migrations/171500000000
 import { CreateDriveLinksTable1715000000002 } from './database/migrations/1715000000002-CreateDriveLinksTable';
 
 @Module({
+  
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
