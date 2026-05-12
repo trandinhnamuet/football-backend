@@ -11,8 +11,9 @@ async function bootstrap() {
     'http://localhost:3000',
     'http://localhost:3001',
     'https://football.trandinhnamz.xyz',
-    'https://api.football.trandinhnamz.xyz',
-    'https://football.api.trandinhnamz.xyz',
+    'https://football.api.trandinhnamz.xyz',  
+    'https://www.lonfantafc.com/',
+    'https://www.api.lonfantafc.com/'
   ];
 
   app.enableCors({
