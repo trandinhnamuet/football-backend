@@ -9,6 +9,7 @@ import { SyncCache } from './entities/sync-cache.entity';
 import { DriveLink } from './entities/drive-link.entity';
 import { I18nSetting } from './entities/i18n-setting.entity';
 import { AppController } from './app.controller';
+import { AppService } from './app.service';
 import { PlayersModule } from './modules/players/players.module';
 import { ArticlesModule } from './modules/articles/articles.module';
 import { MatchesModule } from './modules/matches/matches.module';
@@ -53,5 +54,6 @@ import { CreateI18nSettingsTable1715000000003 } from './database/migrations/1715
     I18nModule,
   ],
   controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
