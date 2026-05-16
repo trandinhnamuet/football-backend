@@ -54,3 +54,4 @@ import { CreateI18nSettingsTable1715000000003 } from './database/migrations/1715
   ],
   controllers: [AppController],
 })
+export class AppModule {}
