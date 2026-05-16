@@ -25,7 +25,7 @@ async function bootstrap() {
         callback(null, true); // Allow all for now, can be restricted later
       }
     },
-    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'x-admin-password'],
     credentials: true,
   });
