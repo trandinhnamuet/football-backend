@@ -8,6 +8,7 @@ import { Match } from './entities/match.entity';
 import { SyncCache } from './entities/sync-cache.entity';
 import { DriveLink } from './entities/drive-link.entity';
 import { I18nSetting } from './entities/i18n-setting.entity';
+import { AppController } from './app.controller';
 import { PlayersModule } from './modules/players/players.module';
 import { ArticlesModule } from './modules/articles/articles.module';
 import { MatchesModule } from './modules/matches/matches.module';
@@ -20,7 +21,6 @@ import { CreateDriveLinksTable1715000000002 } from './database/migrations/171500
 import { CreateI18nSettingsTable1715000000003 } from './database/migrations/1715000000003-CreateI18nSettingsTable';
 
 @Module({
-
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
@@ -52,5 +52,6 @@ import { CreateI18nSettingsTable1715000000003 } from './database/migrations/1715
     DriveLinksModule,
     I18nModule,
   ],
+  controllers: [AppController],
 })
 export class AppModule {}
