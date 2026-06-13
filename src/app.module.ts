@@ -22,6 +22,8 @@ import { AboutModule } from './modules/about/about.module';
 import { AboutPage } from './entities/about-page.entity';
 import { BannerSlide } from './entities/banner-slide.entity';
 import { BannerSlidesModule } from './modules/banner-slides/banner-slides.module';
+import { SiteSetting } from './entities/site-setting.entity';
+import { SettingsModule } from './modules/settings/settings.module';
 import { CreateFootballSchema1715000000000 } from './database/migrations/1715000000000-CreateFootballSchema';
 import { CreateAllTables1715000000001 } from './database/migrations/1715000000001-CreateAllTables';
 import { CreateDriveLinksTable1715000000002 } from './database/migrations/1715000000002-CreateDriveLinksTable';
@@ -30,6 +32,7 @@ import { CreateVideoHighlightsTable1715000000004 } from './database/migrations/1
 import { CreateAboutPageTable1715000000005 } from './database/migrations/1715000000005-CreateAboutPageTable';
 import { CreateBannerSlidesTable1715000000006 } from './database/migrations/1715000000006-CreateBannerSlidesTable';
 import { AddMatchImageAndVideoChannel1715000000007 } from './database/migrations/1715000000007-AddMatchImageAndVideoChannel';
+import { CreateSiteSettingsTable1715000000008 } from './database/migrations/1715000000008-CreateSiteSettingsTable';
 
 @Module({
   imports: [
@@ -46,11 +49,11 @@ import { AddMatchImageAndVideoChannel1715000000007 } from './database/migrations
         username: config.get('DB_USERNAME'),
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_NAME'),
-        entities: [Player, Article, Match, SyncCache, DriveLink, I18nSetting, VideoHighlight, AboutPage, BannerSlide],
+        entities: [Player, Article, Match, SyncCache, DriveLink, I18nSetting, VideoHighlight, AboutPage, BannerSlide, SiteSetting],
         synchronize: false,
         migrationsRun: true,
         migrationsTableName: 'migrations',
-        migrations: [CreateFootballSchema1715000000000, CreateAllTables1715000000001, CreateDriveLinksTable1715000000002, CreateI18nSettingsTable1715000000003, CreateVideoHighlightsTable1715000000004, CreateAboutPageTable1715000000005, CreateBannerSlidesTable1715000000006, AddMatchImageAndVideoChannel1715000000007],
+        migrations: [CreateFootballSchema1715000000000, CreateAllTables1715000000001, CreateDriveLinksTable1715000000002, CreateI18nSettingsTable1715000000003, CreateVideoHighlightsTable1715000000004, CreateAboutPageTable1715000000005, CreateBannerSlidesTable1715000000006, AddMatchImageAndVideoChannel1715000000007, CreateSiteSettingsTable1715000000008],
         ssl: { rejectUnauthorized: false },
         extra: { connectionTimeoutMillis: 10000 },
       }),
@@ -65,6 +68,7 @@ import { AddMatchImageAndVideoChannel1715000000007 } from './database/migrations
     VideoHighlightModule,
     AboutModule,
     BannerSlidesModule,
+    SettingsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
