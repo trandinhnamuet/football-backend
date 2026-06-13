@@ -72,4 +72,32 @@ export class PlayersController {
     const url = `/uploads/players/${file.filename}`;
     return this.service.updateImage(id, url);
   }
+
+  @Patch(':id/zoom-image')
+  @UseGuards(AdminGuard)
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './uploads/players',
+        filename: (_req, file, cb) => {
+          const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          cb(null, `player-zoom-${unique}${extname(file.originalname)}`);
+        },
+      }),
+      fileFilter: (_req, file, cb) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|webp|avif)$/)) {
+          return cb(new Error('Only image files allowed'), false);
+        }
+        cb(null, true);
+      },
+      limits: { fileSize: 20 * 1024 * 1024 },
+    }),
+  )
+  async uploadZoomImage(
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    const url = `/uploads/players/${file.filename}`;
+    return this.service.updateZoomImage(id, url);
+  }
 }

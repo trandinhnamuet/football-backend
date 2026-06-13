@@ -62,6 +62,7 @@ export class PlayersService {
   async remove(id: number) {
     const player = await this.findOne(id);
     await deleteLocalFile(player.image_url);
+    await deleteLocalFile(player.zoom_image_url);
     await this.repo.delete(id);
     return { deleted: true, id };
   }
@@ -70,6 +71,13 @@ export class PlayersService {
     const player = await this.findOne(id);
     await deleteLocalFile(player.image_url);
     await this.repo.update(id, { image_url: imageUrl });
+    return this.findOne(id);
+  }
+
+  async updateZoomImage(id: number, imageUrl: string) {
+    const player = await this.findOne(id);
+    await deleteLocalFile(player.zoom_image_url);
+    await this.repo.update(id, { zoom_image_url: imageUrl });
     return this.findOne(id);
   }
 

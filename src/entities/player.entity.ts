@@ -29,6 +29,10 @@ export class Player {
   @Column({ nullable: true })
   image_url: string;
 
+  // Secondary "zoom" photo used on the homepage hero & squad sections
+  @Column({ nullable: true })
+  zoom_image_url: string;
+
   @Column({ default: true })
   is_active: boolean;
 

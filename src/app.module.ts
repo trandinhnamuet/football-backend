@@ -33,6 +33,7 @@ import { CreateAboutPageTable1715000000005 } from './database/migrations/1715000
 import { CreateBannerSlidesTable1715000000006 } from './database/migrations/1715000000006-CreateBannerSlidesTable';
 import { AddMatchImageAndVideoChannel1715000000007 } from './database/migrations/1715000000007-AddMatchImageAndVideoChannel';
 import { CreateSiteSettingsTable1715000000008 } from './database/migrations/1715000000008-CreateSiteSettingsTable';
+import { AddPlayerZoomImage1715000000009 } from './database/migrations/1715000000009-AddPlayerZoomImage';
 
 @Module({
   imports: [
@@ -53,7 +54,7 @@ import { CreateSiteSettingsTable1715000000008 } from './database/migrations/1715
         synchronize: false,
         migrationsRun: true,
         migrationsTableName: 'migrations',
-        migrations: [CreateFootballSchema1715000000000, CreateAllTables1715000000001, CreateDriveLinksTable1715000000002, CreateI18nSettingsTable1715000000003, CreateVideoHighlightsTable1715000000004, CreateAboutPageTable1715000000005, CreateBannerSlidesTable1715000000006, AddMatchImageAndVideoChannel1715000000007, CreateSiteSettingsTable1715000000008],
+        migrations: [CreateFootballSchema1715000000000, CreateAllTables1715000000001, CreateDriveLinksTable1715000000002, CreateI18nSettingsTable1715000000003, CreateVideoHighlightsTable1715000000004, CreateAboutPageTable1715000000005, CreateBannerSlidesTable1715000000006, AddMatchImageAndVideoChannel1715000000007, CreateSiteSettingsTable1715000000008, AddPlayerZoomImage1715000000009],
         ssl: { rejectUnauthorized: false },
         extra: { connectionTimeoutMillis: 10000 },
       }),
