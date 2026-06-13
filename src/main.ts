@@ -10,8 +10,10 @@ async function bootstrap() {
   const allowedOrigins = [
     'http://localhost:3000',
     'http://localhost:3001',
+    'http://192.168.0.170:3000',
+    'http://192.168.0.170:3001',
     'https://football.trandinhnamz.xyz',
-    'https://football.api.trandinhnamz.xyz',  
+    'https://football.api.trandinhnamz.xyz',
     'https://lonfantafc.com',
     'https://www.lonfantafc.com',
     'https://api.lonfantafc.com',
