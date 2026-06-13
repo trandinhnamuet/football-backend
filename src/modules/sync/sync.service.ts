@@ -99,14 +99,23 @@ export class SyncService {
     return { first_name, last_name };
   }
 
+  // Normalized full name used to identify a player across both sheets
+  private normalizeName(name: string): string {
+    return name.trim().toLowerCase().replace(/\s+/g, ' ');
+  }
+
+  private fullName(first: string, last: string): string {
+    return `${first || ''} ${last || ''}`.trim();
+  }
+
   async syncFromExcel(force = false): Promise<{ synced: boolean; message: string; count?: number }> {
     const now = Date.now();
     if (!force && now - this.lastSyncTime < this.SYNC_COOLDOWN) {
       return { synced: false, message: 'Sync cooldown active, skipped' };
     }
 
-    const dataUrl = this.config.get<string>('DATA_URL');
-    if (!dataUrl) return { synced: false, message: 'DATA_URL not configured' };
+    const dataUrl = this.config.get<string>('STATS_DATA_URL');
+    if (!dataUrl) return { synced: false, message: 'STATS_DATA_URL not configured' };
 
     let csvData: string;
     try {
@@ -156,73 +165,131 @@ export class SyncService {
       return { synced: false, message: 'No player rows found' };
     }
 
-    const excelNums = new Set<number>();
+    // Match stats to existing players by full name (họ và tên).
+    // Players are managed manually / via the import button — stats sync only
+    // updates points for players already in the DB. It never creates or
+    // deactivates players.
+    const allPlayers = await this.playerRepo.find();
+    const byName = new Map<string, Player>();
+    for (const p of allPlayers) {
+      byName.set(this.normalizeName(this.fullName(p.first_name, p.last_name)), p);
+    }
 
+    // Count total matches played = number of match columns with any data (Có/Không)
+    const totalMatchCols = rows[headerIdx].slice(6).filter((h, i) => i % 3 === 0 && h).length;
+
+    let updated = 0;
+    let unmatched = 0;
     for (const row of playerRows) {
-      const num = this.toInt(row[0]);
       const fullName = row[1]?.trim();
-      if (!num || !fullName) continue;
-
-      excelNums.add(num);
-      const { first_name, last_name } = this.splitFullName(fullName);
+      if (!fullName) continue;
 
       // Aggregate stats: col[2]=attendance, col[3]=goals, col[4]=assists
       const attendance = this.toInt(row[2]);
       const goals = this.toInt(row[3]);
       const assists = this.toInt(row[4]);
-
-      // Calculate points
       const points = goals * 5 + assists * 3 + attendance * 2;
 
-      // Count total matches played = number of match columns with any data (Có/Không)
-      const totalMatchCols = rows[headerIdx].slice(6).filter((h, i) => i % 3 === 0 && h).length;
-
-      const existing = await this.playerRepo.findOne({ where: { num } });
-
-      if (existing) {
-        await this.playerRepo.update(existing.id, {
-          first_name: first_name || existing.first_name,
-          last_name: last_name !== undefined ? last_name : existing.last_name,
-          is_active: true,
-          stat_goals: goals,
-          stat_assists: assists,
-          stat_attendance: attendance,
-          stat_points: points,
-          stat_matches: totalMatchCols || existing.stat_matches,
-        });
-      } else {
-        await this.playerRepo.save({
-          num,
-          first_name,
-          last_name,
-          role: 'Tự do',
-          joined: new Date().getFullYear().toString(),
-          boots: 'Phải',
-          nick: last_name || first_name,
-          is_active: true,
-          stat_goals: goals,
-          stat_assists: assists,
-          stat_attendance: attendance,
-          stat_points: points,
-          stat_matches: totalMatchCols,
-        });
+      const existing = byName.get(this.normalizeName(fullName));
+      if (!existing) {
+        unmatched++;
+        this.logger.warn(`Stats sync: no player named "${fullName}" in DB — skipped`);
+        continue;
       }
-    }
 
-    // Deactivate players not in Excel
-    const allActive = await this.playerRepo.find({ where: { is_active: true } });
-    for (const p of allActive) {
-      if (!excelNums.has(p.num)) {
-        await this.playerRepo.update(p.id, { is_active: false });
-        this.logger.log(`Deactivated player #${p.num} ${p.first_name} ${p.last_name}`);
-      }
+      await this.playerRepo.update(existing.id, {
+        stat_goals: goals,
+        stat_assists: assists,
+        stat_attendance: attendance,
+        stat_points: points,
+        stat_matches: totalMatchCols || existing.stat_matches,
+      });
+      updated++;
     }
 
     this.lastSyncHash = hash;
     this.lastSyncTime = now;
 
-    this.logger.log(`Sync complete: ${playerRows.length} players processed`);
-    return { synced: true, message: 'Sync successful', count: playerRows.length };
+    const msg = `Cập nhật điểm cho ${updated} cầu thủ` + (unmatched > 0 ? `, ${unmatched} dòng không khớp tên` : '');
+    this.logger.log(`Stats sync complete: ${updated} updated, ${unmatched} unmatched`);
+    return { synced: true, message: msg, count: updated };
+  }
+
+  /**
+   * Import players from PLAYER_DATA_URL (sheet thông tin cầu thủ).
+   * Adds players that are missing (identified by full name); never deletes
+   * players that exist in the DB but not in the sheet.
+   * Sheet columns: 0=timestamp, 1=Họ và tên, 2=DOB, 3=phone,
+   *                4=số áo, 5=số áo dự phòng, 6=size, 7+=ảnh
+   */
+  async importPlayers(): Promise<{ message: string; added: number; skipped: number }> {
+    const dataUrl = this.config.get<string>('PLAYER_DATA_URL');
+    if (!dataUrl) return { message: 'PLAYER_DATA_URL not configured', added: 0, skipped: 0 };
+
+    let csvData: string;
+    try {
+      const exportUrl = this.getExportUrl(dataUrl);
+      const response = await axios.get(exportUrl, {
+        timeout: 15000,
+        maxRedirects: 5,
+        headers: { 'User-Agent': 'Mozilla/5.0' },
+      });
+      csvData = typeof response.data === 'string' ? response.data : String(response.data);
+    } catch (err) {
+      this.logger.error('Failed to fetch player sheet:', err.message);
+      throw new Error(`Fetch failed: ${err.message}`);
+    }
+
+    const rows = this.parseCSVRows(csvData);
+    if (rows.length < 2) return { message: 'Sheet rỗng', added: 0, skipped: 0 };
+
+    // Existing players: track names (to skip) and used numbers (to avoid clashes)
+    const allPlayers = await this.playerRepo.find();
+    const existingNames = new Set(allPlayers.map(p => this.normalizeName(this.fullName(p.first_name, p.last_name))));
+    const usedNums = new Set(allPlayers.map(p => p.num).filter(n => typeof n === 'number'));
+    let nextNum = (usedNums.size ? Math.max(...usedNums) : 0) + 1;
+    const takeNextNum = (): number => {
+      while (usedNums.has(nextNum)) nextNum++;
+      usedNums.add(nextNum);
+      return nextNum;
+    };
+
+    let added = 0;
+    let skipped = 0;
+    // Row 0 is the header
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i];
+      const fullName = row[1]?.trim();
+      if (!fullName) continue;
+
+      const key = this.normalizeName(fullName);
+      if (existingNames.has(key)) { skipped++; continue; }
+      existingNames.add(key);
+
+      // Jersey number: prefer registered (col 4), fall back to auto-assigned
+      let num = this.toInt(row[4]);
+      if (!num || usedNums.has(num)) {
+        num = takeNextNum();
+      } else {
+        usedNums.add(num);
+      }
+
+      const { first_name, last_name } = this.splitFullName(fullName);
+      await this.playerRepo.save({
+        num,
+        first_name,
+        last_name,
+        role: 'Tự do',
+        joined: new Date().getFullYear().toString(),
+        boots: 'Phải',
+        nick: last_name || first_name,
+        is_active: true,
+      });
+      added++;
+    }
+
+    this.logger.log(`Player import complete: ${added} added, ${skipped} already existed`);
+    return { message: `Đã thêm ${added} cầu thủ mới, bỏ qua ${skipped} cầu thủ đã có`, added, skipped };
   }
 
   private async syncMatches(rows: string[][], headerIdx: number) {

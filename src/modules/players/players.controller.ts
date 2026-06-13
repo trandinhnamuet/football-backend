@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Patch, Param, Body, UseGuards,
+  Controller, Get, Post, Patch, Delete, Param, Body, UseGuards,
   UseInterceptors, UploadedFile, ParseIntPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -27,10 +27,22 @@ export class PlayersController {
     return this.service.findOne(id);
   }
 
+  @Post()
+  @UseGuards(AdminGuard)
+  create(@Body() body: any) {
+    return this.service.create(body);
+  }
+
   @Patch(':id')
   @UseGuards(AdminGuard)
   update(@Param('id', ParseIntPipe) id: number, @Body() body: any) {
     return this.service.update(id, body);
+  }
+
+  @Delete(':id')
+  @UseGuards(AdminGuard)
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.service.remove(id);
   }
 
   @Patch(':id/image')
