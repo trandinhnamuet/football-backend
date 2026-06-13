@@ -11,9 +11,14 @@ export class VideoHighlightController {
     return this.service.get();
   }
 
+  @Get('recommendations')
+  recommendations() {
+    return this.service.getRecommendations();
+  }
+
   @Put()
   @UseGuards(AdminGuard)
-  update(@Body() body: { youtube_url?: string; title?: string; title_en?: string; is_active?: boolean }) {
+  update(@Body() body: { youtube_url?: string; title?: string; title_en?: string; is_active?: boolean; channel_url?: string }) {
     return this.service.update(body);
   }
 }
