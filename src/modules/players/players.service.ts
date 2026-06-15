@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { unlink } from 'fs/promises';
 import { join } from 'path';
 import { Player } from '../../entities/player.entity';
@@ -33,13 +33,12 @@ export class PlayersService {
   }
 
   async create(data: Partial<Player>) {
-    // Auto-assign a free jersey number if missing or already taken
+    // Auto-assign a jersey number only when none is provided. Số áo trùng được phép.
     let num = Number(data.num);
-    if (!num || isNaN(num) || (await this.repo.findOne({ where: { num } }))) {
+    if (!num || isNaN(num)) {
       const all = await this.repo.find();
       const used = new Set(all.map(p => p.num));
       num = (used.size ? Math.max(...used) : 0) + 1;
-      while (used.has(num)) num++;
     }
     const player = this.repo.create({
       num,
@@ -55,21 +54,6 @@ export class PlayersService {
   }
 
   async update(id: number, data: Partial<Player>) {
-    // Nếu admin đổi số áo, kiểm tra trùng với cầu thủ khác trước khi ghi
-    // để tránh lỗi 500 do vi phạm ràng buộc duy nhất "uq_players_num".
-    if (data.num !== undefined && data.num !== null && `${data.num}` !== '') {
-      const num = Number(data.num);
-      if (!isNaN(num)) {
-        const taken = await this.repo.findOne({ where: { num, id: Not(id) } });
-        if (taken) {
-          const owner = [taken.first_name, taken.last_name].filter(Boolean).join(' ').trim();
-          throw new ConflictException(
-            `Số áo ${num} đã được sử dụng bởi cầu thủ ${owner || `#${taken.id}`}. Vui lòng chọn số khác.`,
-          );
-        }
-        data.num = num;
-      }
-    }
     await this.repo.update(id, data);
     return this.findOne(id);
   }
