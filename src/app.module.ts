@@ -60,7 +60,16 @@ import { DropPlayerNumUnique1715000000010 } from './database/migrations/17150000
         migrationsTableName: 'migrations',
         migrations: [CreateFootballSchema1715000000000, CreateAllTables1715000000001, CreateDriveLinksTable1715000000002, CreateI18nSettingsTable1715000000003, CreateVideoHighlightsTable1715000000004, CreateAboutPageTable1715000000005, CreateBannerSlidesTable1715000000006, AddMatchImageAndVideoChannel1715000000007, CreateSiteSettingsTable1715000000008, AddPlayerZoomImage1715000000009, DropPlayerNumUnique1715000000010, CreateMemorialPostsTable1715000000011],
         ssl: { rejectUnauthorized: false },
-        extra: { connectionTimeoutMillis: 10000 },
+        // Resilience against transient drops on the Supabase shared pooler.
+        retryAttempts: 10,
+        retryDelay: 3000,
+        keepConnectionAlive: true,
+        extra: {
+          max: 10,
+          connectionTimeoutMillis: 10000,
+          idleTimeoutMillis: 30000,
+          keepAlive: true,
+        },
       }),
       inject: [ConfigService],
     }),

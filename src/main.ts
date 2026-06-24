@@ -1,11 +1,31 @@
+import './dns-ipv4-first';
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
+import { Logger } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 import { AppModule } from './app.module';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Attach an error handler to the underlying pg pool. When the Supabase pooler
+  // drops an idle client, pg emits 'error' on the pool — with no listener that
+  // surfaces as an unhandled error event and can crash the process. Handling it
+  // lets the pool quietly discard the dead client and create a fresh one.
+  const dbLogger = new Logger('Database');
+  try {
+    const dataSource = app.get(DataSource);
+    const pool = (dataSource.driver as { master?: { on?: (event: string, cb: (err: Error) => void) => void } }).master;
+    if (pool && typeof pool.on === 'function') {
+      pool.on('error', (err: Error) =>
+        dbLogger.error(`PG idle client error (handled, pool will recycle): ${err.message}`),
+      );
+    }
+  } catch {
+    dbLogger.warn('Could not attach pg pool error handler');
+  }
 
   const allowedOrigins = [
     'http://localhost:3000',
