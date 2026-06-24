@@ -24,6 +24,9 @@ import { BannerSlide } from './entities/banner-slide.entity';
 import { BannerSlidesModule } from './modules/banner-slides/banner-slides.module';
 import { SiteSetting } from './entities/site-setting.entity';
 import { SettingsModule } from './modules/settings/settings.module';
+import { MemorialPost } from './entities/memorial-post.entity';
+import { MemorialPostsModule } from './modules/memorial-posts/memorial-posts.module';
+import { CreateMemorialPostsTable1715000000011 } from './database/migrations/1715000000011-CreateMemorialPostsTable';
 import { CreateFootballSchema1715000000000 } from './database/migrations/1715000000000-CreateFootballSchema';
 import { CreateAllTables1715000000001 } from './database/migrations/1715000000001-CreateAllTables';
 import { CreateDriveLinksTable1715000000002 } from './database/migrations/1715000000002-CreateDriveLinksTable';
@@ -51,11 +54,11 @@ import { DropPlayerNumUnique1715000000010 } from './database/migrations/17150000
         username: config.get('DB_USERNAME'),
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_NAME'),
-        entities: [Player, Article, Match, SyncCache, DriveLink, I18nSetting, VideoHighlight, AboutPage, BannerSlide, SiteSetting],
+        entities: [Player, Article, Match, SyncCache, DriveLink, I18nSetting, VideoHighlight, AboutPage, BannerSlide, SiteSetting, MemorialPost],
         synchronize: false,
         migrationsRun: true,
         migrationsTableName: 'migrations',
-        migrations: [CreateFootballSchema1715000000000, CreateAllTables1715000000001, CreateDriveLinksTable1715000000002, CreateI18nSettingsTable1715000000003, CreateVideoHighlightsTable1715000000004, CreateAboutPageTable1715000000005, CreateBannerSlidesTable1715000000006, AddMatchImageAndVideoChannel1715000000007, CreateSiteSettingsTable1715000000008, AddPlayerZoomImage1715000000009, DropPlayerNumUnique1715000000010],
+        migrations: [CreateFootballSchema1715000000000, CreateAllTables1715000000001, CreateDriveLinksTable1715000000002, CreateI18nSettingsTable1715000000003, CreateVideoHighlightsTable1715000000004, CreateAboutPageTable1715000000005, CreateBannerSlidesTable1715000000006, AddMatchImageAndVideoChannel1715000000007, CreateSiteSettingsTable1715000000008, AddPlayerZoomImage1715000000009, DropPlayerNumUnique1715000000010, CreateMemorialPostsTable1715000000011],
         ssl: { rejectUnauthorized: false },
         extra: { connectionTimeoutMillis: 10000 },
       }),
@@ -71,6 +74,7 @@ import { DropPlayerNumUnique1715000000010 } from './database/migrations/17150000
     AboutModule,
     BannerSlidesModule,
     SettingsModule,
+    MemorialPostsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
