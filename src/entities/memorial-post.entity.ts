@@ -5,6 +5,9 @@ export class MemorialPost {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ type: 'varchar', length: 255, nullable: true, unique: true })
+  slug: string;
+
   @Column()
   title: string;
 

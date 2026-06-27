@@ -17,9 +17,13 @@ export class MemorialPostsController {
     return this.service.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.service.findOne(id);
+  @Get(':idOrSlug')
+  findOne(@Param('idOrSlug') idOrSlug: string) {
+    // Số -> tra theo id (tương thích link cũ /members/13);
+    // chuỗi -> tra theo slug (/members/ngo-thanh-tuan).
+    return /^\d+$/.test(idOrSlug)
+      ? this.service.findOne(Number(idOrSlug))
+      : this.service.findBySlug(idOrSlug);
   }
 
   @Post()

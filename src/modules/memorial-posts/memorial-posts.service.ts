@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { unlink } from 'fs/promises';
 import { join } from 'path';
 import { MemorialPost } from '../../entities/memorial-post.entity';
@@ -10,6 +10,19 @@ async function deleteLocalFile(url: string | null | undefined): Promise<void> {
   try {
     await unlink(join(process.cwd(), url));
   } catch {}
+}
+
+// Chuẩn hoá slug: bỏ dấu tiếng Việt, hạ chữ thường, thay ký tự lạ bằng "-".
+// Ví dụ: "Ngô Thanh Tuấn" -> "ngo-thanh-tuan".
+function slugify(input: string): string {
+  return (input || '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[đĐ]/g, 'd')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 @Injectable()
@@ -29,7 +42,33 @@ export class MemorialPostsService {
     return p;
   }
 
-  create(data: Partial<MemorialPost>) {
+  async findBySlug(slug: string) {
+    const p = await this.repo.findOne({ where: { slug } });
+    if (!p) throw new NotFoundException('Memorial post not found');
+    return p;
+  }
+
+  // Sinh slug duy nhất từ chuỗi admin nhập. Trả về null nếu để trống
+  // (khi đó URL dùng id). Tự thêm hậu tố -2, -3... nếu bị trùng.
+  private async resolveSlug(raw: string | null | undefined, excludeId?: number): Promise<string | null> {
+    const base = slugify(raw || '');
+    if (!base) return null;
+    let candidate = base;
+    let n = 2;
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const clash = await this.repo.findOne({
+        where: excludeId ? { slug: candidate, id: Not(excludeId) } : { slug: candidate },
+      });
+      if (!clash) return candidate;
+      candidate = `${base}-${n++}`;
+    }
+  }
+
+  async create(data: Partial<MemorialPost>) {
+    if (data.slug !== undefined) {
+      data.slug = (await this.resolveSlug(data.slug)) as string;
+    }
     const post = this.repo.create(data);
     return this.repo.save(post);
   }
@@ -40,6 +79,9 @@ export class MemorialPostsService {
       if (existing.image_url && existing.image_url !== data.image_url) {
         await deleteLocalFile(existing.image_url);
       }
+    }
+    if (data.slug !== undefined) {
+      data.slug = (await this.resolveSlug(data.slug, id)) as string;
     }
     await this.repo.update(id, data);
     return this.findOne(id);

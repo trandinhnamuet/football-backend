@@ -27,6 +27,7 @@ import { SettingsModule } from './modules/settings/settings.module';
 import { MemorialPost } from './entities/memorial-post.entity';
 import { MemorialPostsModule } from './modules/memorial-posts/memorial-posts.module';
 import { CreateMemorialPostsTable1715000000011 } from './database/migrations/1715000000011-CreateMemorialPostsTable';
+import { AddMemorialSlug1715000000012 } from './database/migrations/1715000000012-AddMemorialSlug';
 import { CreateFootballSchema1715000000000 } from './database/migrations/1715000000000-CreateFootballSchema';
 import { CreateAllTables1715000000001 } from './database/migrations/1715000000001-CreateAllTables';
 import { CreateDriveLinksTable1715000000002 } from './database/migrations/1715000000002-CreateDriveLinksTable';
@@ -58,7 +59,7 @@ import { DropPlayerNumUnique1715000000010 } from './database/migrations/17150000
         synchronize: false,
         migrationsRun: true,
         migrationsTableName: 'migrations',
-        migrations: [CreateFootballSchema1715000000000, CreateAllTables1715000000001, CreateDriveLinksTable1715000000002, CreateI18nSettingsTable1715000000003, CreateVideoHighlightsTable1715000000004, CreateAboutPageTable1715000000005, CreateBannerSlidesTable1715000000006, AddMatchImageAndVideoChannel1715000000007, CreateSiteSettingsTable1715000000008, AddPlayerZoomImage1715000000009, DropPlayerNumUnique1715000000010, CreateMemorialPostsTable1715000000011],
+        migrations: [CreateFootballSchema1715000000000, CreateAllTables1715000000001, CreateDriveLinksTable1715000000002, CreateI18nSettingsTable1715000000003, CreateVideoHighlightsTable1715000000004, CreateAboutPageTable1715000000005, CreateBannerSlidesTable1715000000006, AddMatchImageAndVideoChannel1715000000007, CreateSiteSettingsTable1715000000008, AddPlayerZoomImage1715000000009, DropPlayerNumUnique1715000000010, CreateMemorialPostsTable1715000000011, AddMemorialSlug1715000000012],
         ssl: { rejectUnauthorized: false },
         // Resilience against transient drops on the Supabase shared pooler.
         retryAttempts: 10,
