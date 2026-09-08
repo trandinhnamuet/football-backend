@@ -38,6 +38,10 @@ export class Match {
   @Column({ type: 'varchar', length: 500, nullable: true })
   image_url: string;
 
+  /** Loại sân: 5, 7 hoặc 11 người. */
+  @Column({ type: 'int', default: 7 })
+  pitch_size: number;
+
   @CreateDateColumn()
   created_at: Date;
 }
