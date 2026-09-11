@@ -1,5 +1,14 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
 
+/**
+ * Mã kết quả trận đấu: 'W' thắng, 'D' hòa, 'L' thua, 'S' chia đôi.
+ * Chia đôi là trận nội bộ — đội tách làm hai bên đá với nhau — nên không có
+ * thắng/hòa/thua và không tính vào hiệu số bàn thắng của đội.
+ */
+export type MatchResult = 'W' | 'D' | 'L' | 'S';
+
+export const SPLIT_RESULT: MatchResult = 'S';
+
 @Entity({ schema: 'football', name: 'matches' })
 export class Match {
   @PrimaryGeneratedColumn()
@@ -17,6 +26,7 @@ export class Match {
   @Column({ nullable: true })
   venue: string;
 
+  /** 'W' | 'D' | 'L' | 'S' (chia đôi). Rỗng khi chưa có kết quả. */
   @Column({ nullable: true })
   result: string;
 
