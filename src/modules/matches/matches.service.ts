@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Match, SPLIT_RESULT } from '../../entities/match.entity';
+import { Match, SPLIT_RESULT, CANCELLED_RESULT } from '../../entities/match.entity';
 
 @Injectable()
 export class MatchesService {
@@ -23,7 +23,11 @@ export class MatchesService {
   }
 
   async teamStats() {
-    const matches = await this.repo.find({ where: { is_upcoming: false } });
+    const rows = await this.repo.find({ where: { is_upcoming: false } });
+    // Trận hủy (bất khả kháng) không được đá nên không phải một trận đã đá:
+    // nó nằm ngoài mọi thống kê, chỉ được đếm riêng để biết đã hủy bao nhiêu.
+    const cancelled = rows.filter(m => m.result === CANCELLED_RESULT);
+    const matches = rows.filter(m => m.result !== CANCELLED_RESULT);
     // Trận chia đôi là mình đá với mình: không có thắng/hòa/thua, và bàn thắng
     // của cả hai bên đều là của đội nên không được cộng vào hiệu số.
     const competitive = matches.filter(m => m.result !== SPLIT_RESULT);
@@ -33,6 +37,7 @@ export class MatchesService {
       draws: matches.filter(m => m.result === 'D').length,
       losses: matches.filter(m => m.result === 'L').length,
       splits: matches.filter(m => m.result === SPLIT_RESULT).length,
+      cancelled: cancelled.length,
       gf: competitive.reduce((s, m) => s + (m.goals_for || 0), 0),
       ga: competitive.reduce((s, m) => s + (m.goals_against || 0), 0),
     };
