@@ -4,9 +4,13 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { mkdirSync } from 'fs';
+import { extname, join } from 'path';
 import { RecruitmentService } from './recruitment.service';
 import { AdminGuard } from '../../guards/admin.guard';
+
+// Đảm bảo thư mục upload tồn tại trước lần upload đầu tiên trên máy chủ mới.
+mkdirSync(join(process.cwd(), 'uploads', 'recruitment'), { recursive: true });
 
 @Controller('api/recruitment')
 export class RecruitmentController {
