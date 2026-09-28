@@ -7,9 +7,6 @@ import { Article } from '../../entities/article.entity';
 
 export const ARTICLE_MEDIA_DIR = join(process.cwd(), 'uploads', 'articles');
 
-export const ARTICLE_KINDS = ['news', 'announcement'] as const;
-export type ArticleKind = (typeof ARTICLE_KINDS)[number];
-
 const IMAGE_EXT = /\.(jpe?g|png|webp|gif|avif)$/i;
 // No path separators, so a filename can never escape ARTICLE_MEDIA_DIR.
 const SAFE_FILENAME = /^[A-Za-z0-9._-]+$/;
@@ -37,23 +34,8 @@ export class ArticlesService {
     private repo: Repository<Article>,
   ) {}
 
-  findAll(kind?: string) {
-    const where = kind && ARTICLE_KINDS.includes(kind as ArticleKind) ? { kind } : {};
-    return this.repo.find({ where, order: { is_pinned: 'DESC', published_at: 'DESC' } });
-  }
-
-  private normalize(data: Partial<Article>) {
-    if (data.kind !== undefined) {
-      const k = String(data.kind || 'news').toLowerCase();
-      if (!ARTICLE_KINDS.includes(k as ArticleKind)) {
-        throw new BadRequestException(`Invalid kind: ${data.kind}`);
-      }
-      data.kind = k;
-    }
-    if (data.expires_at !== undefined && !data.expires_at) {
-      data.expires_at = null;
-    }
-    return data;
+  findAll() {
+    return this.repo.find({ order: { published_at: 'DESC' } });
   }
 
   async findOne(id: number) {
@@ -63,13 +45,11 @@ export class ArticlesService {
   }
 
   create(data: Partial<Article>) {
-    this.normalize(data);
     const article = this.repo.create(data);
     return this.repo.save(article);
   }
 
   async update(id: number, data: Partial<Article>) {
-    this.normalize(data);
     if (data.image_url !== undefined) {
       const existing = await this.findOne(id);
       if (existing.image_url && existing.image_url !== data.image_url) {

@@ -32,18 +32,6 @@ export class Article {
   @Column({ nullable: true })
   tag_en: string;
 
-  /** 'news' (tin tức, lưu trữ lâu dài) | 'announcement' (thông báo, có hạn). */
-  @Column({ type: 'varchar', length: 20, default: 'news' })
-  kind: string;
-
-  /** Thông báo ghim luôn đứng đầu khối thông báo. */
-  @Column({ type: 'boolean', default: false })
-  is_pinned: boolean;
-
-  /** Hết ngày này thông báo tự rút khỏi trang chủ (null = không hạn). */
-  @Column({ type: 'timestamp', nullable: true })
-  expires_at: Date | null;
-
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   published_at: Date;
 

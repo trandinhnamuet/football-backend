@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Post, Patch, Delete, Param, Body, Query, BadRequestException,
+  Controller, Get, Post, Patch, Delete, Param, Body, BadRequestException,
   UseGuards, UseInterceptors, UploadedFile, ParseIntPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -17,10 +17,9 @@ mkdirSync(ARTICLE_MEDIA_DIR, { recursive: true });
 export class ArticlesController {
   constructor(private service: ArticlesService) {}
 
-  /** `?kind=news` hoặc `?kind=announcement` để lọc; bỏ trống lấy tất cả. */
   @Get()
-  findAll(@Query('kind') kind?: string) {
-    return this.service.findAll(kind);
+  findAll() {
+    return this.service.findAll();
   }
 
   // Must be declared before `:id`, otherwise ParseIntPipe rejects "images".
