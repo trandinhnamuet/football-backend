@@ -26,6 +26,9 @@ import { SiteSetting } from './entities/site-setting.entity';
 import { SettingsModule } from './modules/settings/settings.module';
 import { MemorialPost } from './entities/memorial-post.entity';
 import { MemorialPostsModule } from './modules/memorial-posts/memorial-posts.module';
+import { UserAccount } from './entities/user-account.entity';
+import { AuthModule } from './modules/auth/auth.module';
+import { CreateUserAccountsTable1715000000016 } from './database/migrations/1715000000016-CreateUserAccountsTable';
 import { CreateMemorialPostsTable1715000000011 } from './database/migrations/1715000000011-CreateMemorialPostsTable';
 import { AddMemorialSlug1715000000012 } from './database/migrations/1715000000012-AddMemorialSlug';
 import { AddMatchPitchSize1715000000013 } from './database/migrations/1715000000013-AddMatchPitchSize';
@@ -56,11 +59,11 @@ import { DropPlayerNumUnique1715000000010 } from './database/migrations/17150000
         username: config.get('DB_USERNAME'),
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_NAME'),
-        entities: [Player, Article, Match, SyncCache, DriveLink, I18nSetting, VideoHighlight, AboutPage, BannerSlide, SiteSetting, MemorialPost],
+        entities: [Player, Article, Match, SyncCache, DriveLink, I18nSetting, VideoHighlight, AboutPage, BannerSlide, SiteSetting, MemorialPost, UserAccount],
         synchronize: false,
         migrationsRun: true,
         migrationsTableName: 'migrations',
-        migrations: [CreateFootballSchema1715000000000, CreateAllTables1715000000001, CreateDriveLinksTable1715000000002, CreateI18nSettingsTable1715000000003, CreateVideoHighlightsTable1715000000004, CreateAboutPageTable1715000000005, CreateBannerSlidesTable1715000000006, AddMatchImageAndVideoChannel1715000000007, CreateSiteSettingsTable1715000000008, AddPlayerZoomImage1715000000009, DropPlayerNumUnique1715000000010, CreateMemorialPostsTable1715000000011, AddMemorialSlug1715000000012, AddMatchPitchSize1715000000013],
+        migrations: [CreateFootballSchema1715000000000, CreateAllTables1715000000001, CreateDriveLinksTable1715000000002, CreateI18nSettingsTable1715000000003, CreateVideoHighlightsTable1715000000004, CreateAboutPageTable1715000000005, CreateBannerSlidesTable1715000000006, AddMatchImageAndVideoChannel1715000000007, CreateSiteSettingsTable1715000000008, AddPlayerZoomImage1715000000009, DropPlayerNumUnique1715000000010, CreateMemorialPostsTable1715000000011, AddMemorialSlug1715000000012, AddMatchPitchSize1715000000013, CreateUserAccountsTable1715000000016],
         ssl: { rejectUnauthorized: false },
         // Resilience against transient drops on the Supabase shared pooler.
         retryAttempts: 10,
@@ -86,6 +89,7 @@ import { DropPlayerNumUnique1715000000010 } from './database/migrations/17150000
     BannerSlidesModule,
     SettingsModule,
     MemorialPostsModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
