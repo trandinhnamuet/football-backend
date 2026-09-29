@@ -59,6 +59,10 @@ export class Match {
   @Column({ type: 'varchar', length: 100, nullable: true })
   kit_color: string | null;
 
+  /** Màu áo thứ hai (mang dự phòng / đổi nếu trùng đối thủ). */
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  kit_color_2: string | null;
+
   @CreateDateColumn()
   created_at: Date;
 }
