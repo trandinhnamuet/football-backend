@@ -29,6 +29,15 @@ export class ArticlesController {
     return this.service.listImages();
   }
 
+  /**
+   * Thông báo quan trọng đang hiệu lực. Bọc trong object vì Nest trả body
+   * rỗng cho `null`, khiến client không parse JSON được. Khai báo trước `:id`.
+   */
+  @Get('important')
+  async findImportant() {
+    return { article: await this.service.findImportant() };
+  }
+
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.service.findOne(id);

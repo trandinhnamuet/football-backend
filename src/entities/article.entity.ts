@@ -35,6 +35,14 @@ export class Article {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   published_at: Date;
 
+  /** Thông báo quan trọng — chỉ một bài được bật tại một thời điểm. */
+  @Column({ type: 'boolean', default: false })
+  is_important: boolean;
+
+  /** Ngày cuối còn quan trọng (YYYY-MM-DD). NULL = không hẹn giờ. */
+  @Column({ type: 'date', nullable: true })
+  important_until: string | null;
+
   @CreateDateColumn()
   created_at: Date;
 

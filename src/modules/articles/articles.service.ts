@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, MoreThanOrEqual, Not, Repository } from 'typeorm';
 import { mkdir, readdir, stat, unlink } from 'fs/promises';
 import { join } from 'path';
 import { Article } from '../../entities/article.entity';
@@ -38,18 +38,51 @@ export class ArticlesService {
     return this.repo.find({ order: { published_at: 'DESC' } });
   }
 
+  /**
+   * Thông báo quan trọng đang còn hiệu lực (chưa qua ngày hẹn), hoặc null.
+   * Chỉ một bài được đánh dấu tại một thời điểm — xem normalizeImportant.
+   */
+  async findImportant(): Promise<Article | null> {
+    const today = new Date().toISOString().slice(0, 10);
+    const rows = await this.repo.find({
+      where: [
+        { is_important: true, important_until: IsNull() },
+        { is_important: true, important_until: MoreThanOrEqual(today) },
+      ],
+      order: { published_at: 'DESC' },
+      take: 1,
+    });
+    return rows[0] ?? null;
+  }
+
+  /**
+   * Ngày hẹn rỗng → NULL. Khi bật quan trọng cho một bài thì tắt ở mọi bài
+   * khác để luôn chỉ có một thông báo quan trọng.
+   */
+  private async normalizeImportant(data: Partial<Article>, exceptId?: number): Promise<void> {
+    if ('important_until' in data && !data.important_until) data.important_until = null;
+    if (data.is_important) {
+      await this.repo.update(
+        exceptId === undefined ? { is_important: true } : { is_important: true, id: Not(exceptId) },
+        { is_important: false },
+      );
+    }
+  }
+
   async findOne(id: number) {
     const a = await this.repo.findOne({ where: { id } });
     if (!a) throw new NotFoundException('Article not found');
     return a;
   }
 
-  create(data: Partial<Article>) {
+  async create(data: Partial<Article>) {
+    await this.normalizeImportant(data);
     const article = this.repo.create(data);
     return this.repo.save(article);
   }
 
   async update(id: number, data: Partial<Article>) {
+    await this.normalizeImportant(data, id);
     if (data.image_url !== undefined) {
       const existing = await this.findOne(id);
       if (existing.image_url && existing.image_url !== data.image_url) {

@@ -55,6 +55,10 @@ export class Match {
   @Column({ type: 'int', default: 7 })
   pitch_size: number;
 
+  /** Màu áo đội mặc trong trận, vd. "Cam" / "Đen". */
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  kit_color: string | null;
+
   @CreateDateColumn()
   created_at: Date;
 }
