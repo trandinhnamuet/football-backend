@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Logger, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { VideoHighlight } from '../../entities/video-highlight.entity';
@@ -23,6 +23,7 @@ export class VideoHighlightService {
   private recCache: { key: string; at: number; videos: RecommendedVideo[] } | null = null;
   private channelIdCache = new Map<string, string>();
   private readonly CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+  private readonly logger = new Logger(VideoHighlightService.name);
 
   private async getRow(): Promise<VideoHighlight> {
     let row = await this.repo.findOneBy({ id: 1 });
@@ -115,12 +116,19 @@ export class VideoHighlightService {
       const channelId = await this.resolveChannelId(channelUrl);
       const res = await fetch(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`, {
         headers: { 'User-Agent': 'Mozilla/5.0' },
+        signal: AbortSignal.timeout(8000),
       });
+      if (!res.ok) throw new Error(`RSS HTTP ${res.status}`);
       const xml = await res.text();
       const videos = this.parseFeed(xml).slice(0, 15);
+      // Feed rỗng/không parse được coi như lỗi: KHÔNG cache, giữ danh sách cũ.
+      // Trước đây một lần YouTube trả trang lạ là section video trên trang chủ
+      // biến mất tới khi restart.
+      if (videos.length === 0) throw new Error('RSS feed empty');
       this.recCache = { key: channelUrl, at: Date.now(), videos };
       return videos;
-    } catch {
+    } catch (e) {
+      this.logger.warn(`Không lấy được video đề xuất: ${(e as Error).message}`);
       // Serve stale cache if available, otherwise empty
       return this.recCache?.videos || [];
     }
