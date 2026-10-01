@@ -4,6 +4,7 @@ import { IsNull, MoreThanOrEqual, Not, Repository } from 'typeorm';
 import { mkdir, readdir, stat, unlink } from 'fs/promises';
 import { join } from 'path';
 import { Article } from '../../entities/article.entity';
+import { slugify, uniqueSlug } from './slug.util';
 
 export const ARTICLE_MEDIA_DIR = join(process.cwd(), 'uploads', 'articles');
 
@@ -75,14 +76,46 @@ export class ArticlesService {
     return a;
   }
 
+  async findBySlug(slug: string) {
+    const a = await this.repo.findOne({ where: { slug } });
+    if (!a) throw new NotFoundException('Article not found');
+    return a;
+  }
+
+  /**
+   * Slug không trùng bài nào khác. `wanted` là slug admin tự đặt (nếu có),
+   * không thì sinh từ tiêu đề.
+   */
+  private async resolveSlug(wanted: string | null | undefined, title: string, exceptId?: number): Promise<string> {
+    const base = slugify(wanted || title);
+    const rows = await this.repo
+      .createQueryBuilder('a')
+      .select(['a.id', 'a.slug'])
+      .where('a.slug = :base OR a.slug LIKE :prefix', { base, prefix: `${base}-%` })
+      .getMany();
+    const taken = new Set(rows.filter((r) => r.id !== exceptId).map((r) => r.slug));
+    return uniqueSlug(base, (s) => taken.has(s));
+  }
+
   async create(data: Partial<Article>) {
     await this.normalizeImportant(data);
+    data.slug = await this.resolveSlug(data.slug, data.title || '');
     const article = this.repo.create(data);
     return this.repo.save(article);
   }
 
   async update(id: number, data: Partial<Article>) {
     await this.normalizeImportant(data, id);
+    // Slug giữ nguyên khi đổi tiêu đề để link đã chia sẻ không chết; chỉ đổi
+    // khi admin sửa slug, hoặc sinh mới nếu bài chưa có.
+    if ('slug' in data || data.title !== undefined) {
+      const existing = await this.findOne(id);
+      if ('slug' in data) {
+        data.slug = await this.resolveSlug(data.slug, data.title ?? existing.title, id);
+      } else if (!existing.slug) {
+        data.slug = await this.resolveSlug(null, data.title ?? existing.title, id);
+      }
+    }
     if (data.image_url !== undefined) {
       const existing = await this.findOne(id);
       if (existing.image_url && existing.image_url !== data.image_url) {

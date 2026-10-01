@@ -28,10 +28,14 @@ import { MemorialPost } from './entities/memorial-post.entity';
 import { MemorialPostsModule } from './modules/memorial-posts/memorial-posts.module';
 import { UserAccount } from './entities/user-account.entity';
 import { AuthModule } from './modules/auth/auth.module';
+import { Announcement } from './entities/announcement.entity';
+import { AnnouncementsModule } from './modules/announcements/announcements.module';
 import { CreateUserAccountsTable1715000000016 } from './database/migrations/1715000000016-CreateUserAccountsTable';
 import { AddArticleImportant1715000000017 } from './database/migrations/1715000000017-AddArticleImportant';
 import { AddMatchKitColor1715000000018 } from './database/migrations/1715000000018-AddMatchKitColor';
 import { AddMatchKitColor21715000000019 } from './database/migrations/1715000000019-AddMatchKitColor2';
+import { AddArticleSlug1715000000020 } from './database/migrations/1715000000020-AddArticleSlug';
+import { CreateAnnouncementsTable1715000000021 } from './database/migrations/1715000000021-CreateAnnouncementsTable';
 import { CreateMemorialPostsTable1715000000011 } from './database/migrations/1715000000011-CreateMemorialPostsTable';
 import { AddMemorialSlug1715000000012 } from './database/migrations/1715000000012-AddMemorialSlug';
 import { AddMatchPitchSize1715000000013 } from './database/migrations/1715000000013-AddMatchPitchSize';
@@ -62,11 +66,11 @@ import { DropPlayerNumUnique1715000000010 } from './database/migrations/17150000
         username: config.get('DB_USERNAME'),
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_NAME'),
-        entities: [Player, Article, Match, SyncCache, DriveLink, I18nSetting, VideoHighlight, AboutPage, BannerSlide, SiteSetting, MemorialPost, UserAccount],
+        entities: [Player, Article, Match, SyncCache, DriveLink, I18nSetting, VideoHighlight, AboutPage, BannerSlide, SiteSetting, MemorialPost, UserAccount, Announcement],
         synchronize: false,
         migrationsRun: true,
         migrationsTableName: 'migrations',
-        migrations: [CreateFootballSchema1715000000000, CreateAllTables1715000000001, CreateDriveLinksTable1715000000002, CreateI18nSettingsTable1715000000003, CreateVideoHighlightsTable1715000000004, CreateAboutPageTable1715000000005, CreateBannerSlidesTable1715000000006, AddMatchImageAndVideoChannel1715000000007, CreateSiteSettingsTable1715000000008, AddPlayerZoomImage1715000000009, DropPlayerNumUnique1715000000010, CreateMemorialPostsTable1715000000011, AddMemorialSlug1715000000012, AddMatchPitchSize1715000000013, CreateUserAccountsTable1715000000016, AddArticleImportant1715000000017, AddMatchKitColor1715000000018, AddMatchKitColor21715000000019],
+        migrations: [CreateFootballSchema1715000000000, CreateAllTables1715000000001, CreateDriveLinksTable1715000000002, CreateI18nSettingsTable1715000000003, CreateVideoHighlightsTable1715000000004, CreateAboutPageTable1715000000005, CreateBannerSlidesTable1715000000006, AddMatchImageAndVideoChannel1715000000007, CreateSiteSettingsTable1715000000008, AddPlayerZoomImage1715000000009, DropPlayerNumUnique1715000000010, CreateMemorialPostsTable1715000000011, AddMemorialSlug1715000000012, AddMatchPitchSize1715000000013, CreateUserAccountsTable1715000000016, AddArticleImportant1715000000017, AddMatchKitColor1715000000018, AddMatchKitColor21715000000019, AddArticleSlug1715000000020, CreateAnnouncementsTable1715000000021],
         ssl: { rejectUnauthorized: false },
         // Resilience against transient drops on the Supabase shared pooler.
         retryAttempts: 10,
@@ -93,6 +97,7 @@ import { DropPlayerNumUnique1715000000010 } from './database/migrations/17150000
     SettingsModule,
     MemorialPostsModule,
     AuthModule,
+    AnnouncementsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

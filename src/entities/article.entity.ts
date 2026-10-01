@@ -8,6 +8,10 @@ export class Article {
   @Column()
   title: string;
 
+  /** Đường dẫn SEO /news/<slug>, sinh từ tiêu đề và giữ nguyên khi sửa tiêu đề. */
+  @Column({ type: 'varchar', length: 255, nullable: true, unique: true })
+  slug: string | null;
+
   @Column({ nullable: true })
   title_en: string;
 
