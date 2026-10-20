@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { VideoHighlight } from '../../entities/video-highlight.entity';
 
-const DEFAULT_CHANNEL_ID = 'UCMs2ne02YyiZskpiJ4lsxbw'; // @fclonfanta
+const DEFAULT_CHANNEL_ID = 'UCMs2ne02YyiZskpiJ4lsxbw'; // @lonfantafc
 
 export interface RecommendedVideo {
   videoId: string;
@@ -106,7 +106,7 @@ export class VideoHighlightService {
   /** Fetch the latest videos from the configured YouTube channel (RSS), cached. */
   async getRecommendations(): Promise<RecommendedVideo[]> {
     const row = await this.getRow();
-    const channelUrl = row.channel_url || 'https://www.youtube.com/@fclonfanta';
+    const channelUrl = row.channel_url || 'https://www.youtube.com/@lonfantafc';
 
     if (this.recCache && this.recCache.key === channelUrl && Date.now() - this.recCache.at < this.CACHE_TTL) {
       return this.recCache.videos;

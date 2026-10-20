@@ -17,7 +17,7 @@ export class VideoHighlight {
   @Column({ default: true })
   is_active: boolean;
 
-  @Column({ type: 'varchar', length: 500, default: 'https://www.youtube.com/@fclonfanta' })
+  @Column({ type: 'varchar', length: 500, default: 'https://www.youtube.com/@lonfantafc' })
   channel_url: string;
 
   @UpdateDateColumn()
