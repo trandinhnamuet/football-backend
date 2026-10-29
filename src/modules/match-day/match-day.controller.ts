@@ -53,6 +53,15 @@ export class LiveController {
     return this.service.add(matchId, req.user, body);
   }
 
+  @Post(':matchId/positions')
+  setPosition(
+    @Param('matchId', ParseIntPipe) matchId: number,
+    @Body() body: { player_id: number; x: number; y: number },
+    @Req() req: { user: UserAccount },
+  ) {
+    return this.service.setPosition(matchId, req.user, body);
+  }
+
   @Post(':matchId/events/:eventId/void')
   void(
     @Param('matchId', ParseIntPipe) matchId: number,

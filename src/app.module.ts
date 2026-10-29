@@ -32,6 +32,7 @@ import { Announcement } from './entities/announcement.entity';
 import { AnnouncementsModule } from './modules/announcements/announcements.module';
 import { AttendanceLog } from './entities/attendance-log.entity';
 import { MatchLiveEvent } from './entities/match-live-event.entity';
+import { MatchLivePosition } from './entities/match-live-position.entity';
 import { MatchDayModule } from './modules/match-day/match-day.module';
 import { CreateUserAccountsTable1715000000016 } from './database/migrations/1715000000016-CreateUserAccountsTable';
 import { AddArticleImportant1715000000017 } from './database/migrations/1715000000017-AddArticleImportant';
@@ -41,6 +42,7 @@ import { AddArticleSlug1715000000020 } from './database/migrations/1715000000020
 import { CreateAnnouncementsTable1715000000021 } from './database/migrations/1715000000021-CreateAnnouncementsTable';
 import { FixYoutubeChannelUrl1715000000022 } from './database/migrations/1715000000022-FixYoutubeChannelUrl';
 import { CreateAttendanceAndLiveTables1715000000023 } from './database/migrations/1715000000023-CreateAttendanceAndLiveTables';
+import { CreateLivePositionsTable1715000000024 } from './database/migrations/1715000000024-CreateLivePositionsTable';
 import { CreateMemorialPostsTable1715000000011 } from './database/migrations/1715000000011-CreateMemorialPostsTable';
 import { AddMemorialSlug1715000000012 } from './database/migrations/1715000000012-AddMemorialSlug';
 import { AddMatchPitchSize1715000000013 } from './database/migrations/1715000000013-AddMatchPitchSize';
@@ -71,11 +73,11 @@ import { DropPlayerNumUnique1715000000010 } from './database/migrations/17150000
         username: config.get('DB_USERNAME'),
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_NAME'),
-        entities: [Player, Article, Match, SyncCache, DriveLink, I18nSetting, VideoHighlight, AboutPage, BannerSlide, SiteSetting, MemorialPost, UserAccount, Announcement, AttendanceLog, MatchLiveEvent],
+        entities: [Player, Article, Match, SyncCache, DriveLink, I18nSetting, VideoHighlight, AboutPage, BannerSlide, SiteSetting, MemorialPost, UserAccount, Announcement, AttendanceLog, MatchLiveEvent, MatchLivePosition],
         synchronize: false,
         migrationsRun: true,
         migrationsTableName: 'migrations',
-        migrations: [CreateFootballSchema1715000000000, CreateAllTables1715000000001, CreateDriveLinksTable1715000000002, CreateI18nSettingsTable1715000000003, CreateVideoHighlightsTable1715000000004, CreateAboutPageTable1715000000005, CreateBannerSlidesTable1715000000006, AddMatchImageAndVideoChannel1715000000007, CreateSiteSettingsTable1715000000008, AddPlayerZoomImage1715000000009, DropPlayerNumUnique1715000000010, CreateMemorialPostsTable1715000000011, AddMemorialSlug1715000000012, AddMatchPitchSize1715000000013, CreateUserAccountsTable1715000000016, AddArticleImportant1715000000017, AddMatchKitColor1715000000018, AddMatchKitColor21715000000019, AddArticleSlug1715000000020, CreateAnnouncementsTable1715000000021, FixYoutubeChannelUrl1715000000022, CreateAttendanceAndLiveTables1715000000023],
+        migrations: [CreateFootballSchema1715000000000, CreateAllTables1715000000001, CreateDriveLinksTable1715000000002, CreateI18nSettingsTable1715000000003, CreateVideoHighlightsTable1715000000004, CreateAboutPageTable1715000000005, CreateBannerSlidesTable1715000000006, AddMatchImageAndVideoChannel1715000000007, CreateSiteSettingsTable1715000000008, AddPlayerZoomImage1715000000009, DropPlayerNumUnique1715000000010, CreateMemorialPostsTable1715000000011, AddMemorialSlug1715000000012, AddMatchPitchSize1715000000013, CreateUserAccountsTable1715000000016, AddArticleImportant1715000000017, AddMatchKitColor1715000000018, AddMatchKitColor21715000000019, AddArticleSlug1715000000020, CreateAnnouncementsTable1715000000021, FixYoutubeChannelUrl1715000000022, CreateAttendanceAndLiveTables1715000000023, CreateLivePositionsTable1715000000024],
         ssl: { rejectUnauthorized: false },
         // Resilience against transient drops on the Supabase shared pooler.
         retryAttempts: 10,

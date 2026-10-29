@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LIVE_EVENT_TYPES, LiveEventType, MatchLiveEvent } from '../../entities/match-live-event.entity';
+import { MatchLivePosition } from '../../entities/match-live-position.entity';
 import { UserAccount } from '../../entities/user-account.entity';
 import { AttendanceService, actorName } from './attendance.service';
 
@@ -17,6 +18,7 @@ const PLAYER_TYPES: LiveEventType[] = ['in', 'out', 'sub', 'pass'];
 export class LiveService {
   constructor(
     @InjectRepository(MatchLiveEvent) private events: Repository<MatchLiveEvent>,
+    @InjectRepository(MatchLivePosition) private positions: Repository<MatchLivePosition>,
     private attendance: AttendanceService,
   ) {}
 
@@ -24,9 +26,11 @@ export class LiveService {
     const match = await this.attendance.getMatch(matchId);
     const events = await this.events.find({ where: { match_id: matchId }, order: { id: 'ASC' } });
     const attending = await this.attendance.attendingIds(matchId);
+    const positions = await this.positions.find({ where: { match_id: matchId } });
     const lastId = events.length ? events[events.length - 1].id : 0;
     const voided = events.filter(e => e.voided_at).length;
-    const version = `${lastId}.${voided}.${attending.version}`;
+    const posStamp = positions.reduce((m, p) => Math.max(m, new Date(p.updated_at).getTime()), 0);
+    const version = `${lastId}.${voided}.${attending.version}.${positions.length}-${posStamp}`;
     const server_now = new Date().toISOString();
     if (since && since === version) return { version, server_now, unchanged: true };
     return {
@@ -34,6 +38,7 @@ export class LiveService {
       server_now,
       match: { id: match.id, week: match.week, date: match.date, time: match.time, opponent: match.opponent, venue: match.venue, pitch_size: match.pitch_size },
       attending: attending.ids,
+      positions: positions.map(p => ({ player_id: p.player_id, x: p.x, y: p.y })),
       events: events.map(e => ({
         id: e.id, type: e.type, player_id: e.player_id, player_out_id: e.player_out_id,
         actor_name: e.actor_name, voided_at: e.voided_at, voided_by: e.voided_by, created_at: e.created_at,
@@ -49,6 +54,11 @@ export class LiveService {
     const outId = Number(body.player_out_id) || null;
     if (PLAYER_TYPES.includes(type) && !playerId) throw new BadRequestException('Thiếu cầu thủ');
     if (type === 'sub' && (!outId || outId === playerId)) throw new BadRequestException('Thiếu cầu thủ ra sân');
+    // Người vào thay đứng đúng chỗ người ra trên sơ đồ sân.
+    if (type === 'sub') {
+      const from = await this.positions.findOne({ where: { match_id: matchId, player_id: outId! } });
+      if (from) await this.savePosition(matchId, playerId!, from.x, from.y, user);
+    }
     await this.events.save(this.events.create({
       match_id: matchId,
       type,
@@ -58,6 +68,24 @@ export class LiveService {
       actor_name: actorName(user),
     }));
     return this.view(matchId);
+  }
+
+  async setPosition(matchId: number, user: UserAccount, body: { player_id?: number; x?: number; y?: number }) {
+    await this.attendance.getMatch(matchId);
+    const playerId = Number(body?.player_id);
+    const x = Number(body?.x);
+    const y = Number(body?.y);
+    if (!playerId || !Number.isFinite(x) || !Number.isFinite(y)) throw new BadRequestException('Thiếu cầu thủ hoặc toạ độ');
+    await this.savePosition(matchId, playerId, x, y, user);
+    return this.view(matchId);
+  }
+
+  private async savePosition(matchId: number, playerId: number, x: number, y: number, user: UserAccount) {
+    const clamp = (v: number) => Math.min(1, Math.max(0, v));
+    await this.positions.save(this.positions.create({
+      match_id: matchId, player_id: playerId, x: clamp(x), y: clamp(y),
+      updated_by: actorName(user), updated_at: new Date(),
+    }));
   }
 
   async void(matchId: number, eventId: number, user: UserAccount) {
